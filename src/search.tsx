@@ -1,12 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  Color,
-  Icon,
-  List,
-  Toast,
-  showToast,
-} from "@raycast/api";
+import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
 import { useEffect, useState } from "react";
 import type { SearchResult } from "./api/types";
 import { useDefaultProject } from "./hooks/use-default-project";
@@ -83,7 +75,18 @@ export default function SearchCommand() {
       setSelectedProject(projects[0].projectUuid);
     }
     setInitialized(true);
-  }, [defaultProjectUuid, projects, isLoadingDefault, isLoadingProjects, initialized]);
+  }, [
+    defaultProjectUuid,
+    projects,
+    isLoadingDefault,
+    isLoadingProjects,
+    initialized,
+  ]);
+
+  const handleProjectChange = (projectUuid: string) => {
+    setSelectedProject(projectUuid);
+    setDefaultProject(projectUuid);
+  };
 
   const { data, isLoading: isLoadingSearch } = useLightdashSearch(
     selectedProject || undefined,
@@ -104,20 +107,6 @@ export default function SearchCommand() {
     isLoadingSearch ||
     isLoadingFavorites;
 
-  const currentProjectName = projects?.find(
-    (p) => p.projectUuid === selectedProject,
-  )?.name;
-
-  const handleSetDefault = async () => {
-    if (!selectedProject) return;
-    await setDefaultProject(selectedProject);
-    await showToast({
-      style: Toast.Style.Success,
-      title: "Default Project Set",
-      message: currentProjectName,
-    });
-  };
-
   return (
     <List
       isLoading={isLoading}
@@ -126,16 +115,12 @@ export default function SearchCommand() {
         <List.Dropdown
           tooltip="Select Project"
           value={selectedProject}
-          onChange={setSelectedProject}
+          onChange={handleProjectChange}
         >
           {projects?.map((project) => (
             <List.Dropdown.Item
               key={project.projectUuid}
-              title={
-                project.projectUuid === defaultProjectUuid
-                  ? `${project.name} (default)`
-                  : project.name
-              }
+              title={project.name}
               value={project.projectUuid}
             />
           ))}
@@ -174,28 +159,6 @@ export default function SearchCommand() {
           />
         ))}
       </List.Section>
-      {selectedProject && (
-        <List.Section title="Settings">
-          <List.Item
-            title="Set Current Project as Default"
-            icon={Icon.Pin}
-            subtitle={
-              selectedProject === defaultProjectUuid
-                ? "Already default"
-                : currentProjectName
-            }
-            actions={
-              <ActionPanel>
-                <Action
-                  title="Set as Default Project"
-                  icon={Icon.Pin}
-                  onAction={handleSetDefault}
-                />
-              </ActionPanel>
-            }
-          />
-        </List.Section>
-      )}
     </List>
   );
 }
