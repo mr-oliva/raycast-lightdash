@@ -4,6 +4,7 @@ import type {
   LightdashChart,
   LightdashDashboard,
   LightdashProject,
+  LightdashSpace,
 } from "./types";
 
 interface Preferences {
@@ -58,5 +59,13 @@ export async function fetchCharts(
 ): Promise<readonly LightdashChart[]> {
   return fetchApi<readonly LightdashChart[]>(
     `/api/v1/projects/${projectUuid}/charts`,
+  );
+}
+
+export async function fetchSpaces(
+  projectUuid: string,
+): Promise<readonly LightdashSpace[]> {
+  return fetchApi<readonly LightdashSpace[]>(
+    `/api/v1/projects/${projectUuid}/spaces`,
   );
 }

@@ -24,6 +24,11 @@ export interface LightdashChart {
   readonly views: number;
 }
 
+export interface LightdashSpace {
+  readonly uuid: string;
+  readonly name: string;
+}
+
 export interface LightdashApiResponse<T> {
   readonly status: string;
   readonly results: T;
