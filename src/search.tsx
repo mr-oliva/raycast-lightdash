@@ -8,6 +8,7 @@ import {
 } from "@raycast/api";
 import { useState } from "react";
 import type { SearchResult } from "./api/types";
+import { useFavorites } from "./hooks/use-favorites";
 import { useLightdashSearch, useProjects } from "./hooks/use-lightdash";
 
 interface Preferences {
@@ -23,7 +24,15 @@ function formatDate(dateString: string): string {
   });
 }
 
-function SearchResultItem({ result }: { readonly result: SearchResult }) {
+function SearchResultItem({
+  result,
+  isFavorite,
+  onToggleFavorite,
+}: {
+  readonly result: SearchResult;
+  readonly isFavorite: boolean;
+  readonly onToggleFavorite: (uuid: string) => void;
+}) {
   const icon =
     result.type === "dashboard" ? Icon.AppWindowGrid3x3 : Icon.LineChart;
   const iconColor = result.type === "dashboard" ? Color.Blue : Color.Green;
@@ -34,6 +43,7 @@ function SearchResultItem({ result }: { readonly result: SearchResult }) {
       subtitle={result.description}
       icon={{ source: icon, tintColor: iconColor }}
       accessories={[
+        ...(isFavorite ? [{ icon: Icon.Star, tooltip: "Favorite" }] : []),
         ...(result.spaceName ? [{ tag: result.spaceName }] : []),
         { text: `${result.views} views` },
         {
@@ -45,6 +55,12 @@ function SearchResultItem({ result }: { readonly result: SearchResult }) {
         <ActionPanel>
           <Action.OpenInBrowser url={result.url} />
           <Action.CopyToClipboard title="Copy URL" content={result.url} />
+          <Action
+            title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+            icon={isFavorite ? Icon.StarDisabled : Icon.Star}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "f" }}
+            onAction={() => onToggleFavorite(result.uuid)}
+          />
         </ActionPanel>
       }
     />
@@ -60,10 +76,17 @@ export default function SearchCommand() {
   const { data, isLoading: isLoadingSearch } = useLightdashSearch(
     selectedProject || undefined,
   );
+  const {
+    isFavorite,
+    toggleFavorite,
+    isLoading: isLoadingFavorites,
+  } = useFavorites();
 
   const dashboards = data?.dashboards ?? [];
   const charts = data?.charts ?? [];
-  const isLoading = isLoadingProjects || isLoadingSearch;
+  const allResults = [...dashboards, ...charts];
+  const favorites = allResults.filter((r) => isFavorite(r.uuid));
+  const isLoading = isLoadingProjects || isLoadingSearch || isLoadingFavorites;
 
   return (
     <List
@@ -85,14 +108,36 @@ export default function SearchCommand() {
         </List.Dropdown>
       }
     >
+      {favorites.length > 0 && (
+        <List.Section title="Favorites" subtitle={`${favorites.length}`}>
+          {favorites.map((result) => (
+            <SearchResultItem
+              key={`fav-${result.uuid}`}
+              result={result}
+              isFavorite={true}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
+        </List.Section>
+      )}
       <List.Section title="Dashboards" subtitle={`${dashboards.length}`}>
         {dashboards.map((result) => (
-          <SearchResultItem key={result.uuid} result={result} />
+          <SearchResultItem
+            key={result.uuid}
+            result={result}
+            isFavorite={isFavorite(result.uuid)}
+            onToggleFavorite={toggleFavorite}
+          />
         ))}
       </List.Section>
       <List.Section title="Charts" subtitle={`${charts.length}`}>
         {charts.map((result) => (
-          <SearchResultItem key={result.uuid} result={result} />
+          <SearchResultItem
+            key={result.uuid}
+            result={result}
+            isFavorite={isFavorite(result.uuid)}
+            onToggleFavorite={toggleFavorite}
+          />
         ))}
       </List.Section>
     </List>
