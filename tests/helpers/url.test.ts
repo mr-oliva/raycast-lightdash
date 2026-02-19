@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildChartUrl, buildDashboardUrl, normalizeBaseUrl } from "../../src/helpers/url";
+import { buildChartUrl, buildDashboardUrl, buildExploreUrl, normalizeBaseUrl } from "../../src/helpers/url";
 
 describe("normalizeBaseUrl", () => {
   it("removes trailing slash", () => {
@@ -36,5 +36,22 @@ describe("buildChartUrl", () => {
   it("normalizes base URL with trailing slash", () => {
     const url = buildChartUrl("https://app.lightdash.cloud/", "project-123", "chart-789");
     expect(url).toBe("https://app.lightdash.cloud/projects/project-123/saved/chart-789");
+  });
+});
+
+describe("buildExploreUrl", () => {
+  it("builds correct explore URL", () => {
+    const url = buildExploreUrl("https://app.lightdash.cloud", "project-123", "orders");
+    expect(url).toBe("https://app.lightdash.cloud/projects/project-123/tables/orders");
+  });
+
+  it("normalizes base URL with trailing slash", () => {
+    const url = buildExploreUrl("https://app.lightdash.cloud/", "project-123", "orders");
+    expect(url).toBe("https://app.lightdash.cloud/projects/project-123/tables/orders");
+  });
+
+  it("encodes special characters in explore name", () => {
+    const url = buildExploreUrl("https://app.lightdash.cloud", "project-123", "my table/test");
+    expect(url).toBe("https://app.lightdash.cloud/projects/project-123/tables/my%20table%2Ftest");
   });
 });

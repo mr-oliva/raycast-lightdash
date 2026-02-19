@@ -7,7 +7,12 @@ const FAVORITES_KEY = "favorites";
 async function getFavoriteIds(): Promise<readonly string[]> {
   const raw = await LocalStorage.getItem<string>(FAVORITES_KEY);
   if (!raw) return [];
-  return JSON.parse(raw) as readonly string[];
+  try {
+    return JSON.parse(raw) as readonly string[];
+  } catch {
+    await LocalStorage.removeItem(FAVORITES_KEY);
+    return [];
+  }
 }
 
 async function setFavoriteIds(ids: readonly string[]): Promise<void> {

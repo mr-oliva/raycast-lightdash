@@ -13,7 +13,12 @@ interface RecentEntry {
 async function getRecentEntries(): Promise<readonly RecentEntry[]> {
   const raw = await LocalStorage.getItem<string>(RECENT_KEY);
   if (!raw) return [];
-  return JSON.parse(raw) as readonly RecentEntry[];
+  try {
+    return JSON.parse(raw) as readonly RecentEntry[];
+  } catch {
+    await LocalStorage.removeItem(RECENT_KEY);
+    return [];
+  }
 }
 
 async function saveRecentEntries(

@@ -42,13 +42,18 @@ export interface LightdashApiResponse<T> {
   readonly results: T;
 }
 
+export interface Preferences {
+  readonly baseUrl: string;
+  readonly apiKey: string;
+}
+
 export interface SearchResult {
   readonly type: "dashboard" | "chart" | "explore";
   readonly uuid: string;
   readonly name: string;
   readonly description?: string;
   readonly spaceName?: string;
-  readonly updatedAt: string;
-  readonly views: number;
+  readonly updatedAt?: string;
+  readonly views?: number;
   readonly url: string;
 }

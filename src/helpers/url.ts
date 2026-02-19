@@ -26,5 +26,5 @@ export function buildExploreUrl(
   exploreName: string,
 ): string {
   const normalized = normalizeBaseUrl(baseUrl);
-  return `${normalized}/projects/${projectUuid}/tables/${exploreName}`;
+  return `${normalized}/projects/${projectUuid}/tables/${encodeURIComponent(exploreName)}`;
 }

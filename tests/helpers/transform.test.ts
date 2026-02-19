@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { LightdashChart, LightdashDashboard } from "../../src/api/types";
+import type { LightdashChart, LightdashDashboard, LightdashExplore } from "../../src/api/types";
 import {
-  mergeAndSortResults,
   transformChartToSearchResult,
   transformDashboardToSearchResult,
+  transformExploreToSearchResult,
 } from "../../src/helpers/transform";
 
 const BASE_URL = "https://app.lightdash.cloud";
@@ -95,84 +95,55 @@ describe("transformChartToSearchResult", () => {
   });
 });
 
-describe("mergeAndSortResults", () => {
-  it("merges and sorts by updatedAt descending", () => {
-    const dashboards = [
-      {
-        type: "dashboard" as const,
-        uuid: "d1",
-        name: "Old Dashboard",
-        updatedAt: "2025-01-01T00:00:00Z",
-        views: 10,
-        url: "url1",
-      },
-    ];
+describe("transformExploreToSearchResult", () => {
+  it("transforms an explore to SearchResult with prefixed id", () => {
+    const explore: LightdashExplore = {
+      name: "orders",
+      label: "Orders",
+      description: "Order data",
+      groupLabel: "Sales",
+      tags: ["finance"],
+    };
 
-    const charts = [
-      {
-        type: "chart" as const,
-        uuid: "c1",
-        name: "New Chart",
-        updatedAt: "2025-01-20T00:00:00Z",
-        views: 20,
-        url: "url2",
-      },
-      {
-        type: "chart" as const,
-        uuid: "c2",
-        name: "Mid Chart",
-        updatedAt: "2025-01-10T00:00:00Z",
-        views: 5,
-        url: "url3",
-      },
-    ];
+    const result = transformExploreToSearchResult(explore, BASE_URL, PROJECT_UUID);
 
-    const result = mergeAndSortResults(dashboards, charts);
-
-    expect(result).toHaveLength(3);
-    expect(result[0].uuid).toBe("c1");
-    expect(result[1].uuid).toBe("c2");
-    expect(result[2].uuid).toBe("d1");
+    expect(result).toEqual({
+      type: "explore",
+      uuid: "explore:orders",
+      name: "Orders",
+      description: "Order data",
+      spaceName: "Sales",
+      url: "https://app.lightdash.cloud/projects/project-123/tables/orders",
+    });
   });
 
-  it("handles empty dashboards array", () => {
-    const charts = [
-      {
-        type: "chart" as const,
-        uuid: "c1",
-        name: "Chart",
-        updatedAt: "2025-01-01T00:00:00Z",
-        views: 1,
-        url: "url1",
-      },
-    ];
+  it("handles explore without optional fields", () => {
+    const explore: LightdashExplore = {
+      name: "users",
+      label: "Users",
+    };
 
-    const result = mergeAndSortResults([], charts);
+    const result = transformExploreToSearchResult(explore, BASE_URL, PROJECT_UUID);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].uuid).toBe("c1");
+    expect(result.uuid).toBe("explore:users");
+    expect(result.description).toBeUndefined();
+    expect(result.spaceName).toBeUndefined();
+    expect(result.type).toBe("explore");
+    expect(result.updatedAt).toBeUndefined();
+    expect(result.views).toBeUndefined();
   });
 
-  it("handles empty charts array", () => {
-    const dashboards = [
-      {
-        type: "dashboard" as const,
-        uuid: "d1",
-        name: "Dashboard",
-        updatedAt: "2025-01-01T00:00:00Z",
-        views: 1,
-        url: "url1",
-      },
-    ];
+  it("encodes special characters in explore name for URL", () => {
+    const explore: LightdashExplore = {
+      name: "my table/test",
+      label: "My Table Test",
+    };
 
-    const result = mergeAndSortResults(dashboards, []);
+    const result = transformExploreToSearchResult(explore, BASE_URL, PROJECT_UUID);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].uuid).toBe("d1");
-  });
-
-  it("handles both arrays empty", () => {
-    const result = mergeAndSortResults([], []);
-    expect(result).toHaveLength(0);
+    expect(result.url).toBe(
+      "https://app.lightdash.cloud/projects/project-123/tables/my%20table%2Ftest",
+    );
+    expect(result.uuid).toBe("explore:my table/test");
   });
 });

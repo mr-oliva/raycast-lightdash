@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SearchResult } from "./api/types";
 import { useDefaultProject } from "./hooks/use-default-project";
 import { useFavorites } from "./hooks/use-favorites";
@@ -41,7 +41,7 @@ function SearchResultItem({
       accessories={[
         ...(isFavorite ? [{ icon: Icon.Star, tooltip: "Favorite" }] : []),
         ...(result.spaceName ? [{ tag: result.spaceName }] : []),
-        ...(result.type !== "explore"
+        ...(result.updatedAt !== undefined && result.views !== undefined
           ? [
               { text: `${result.views} views` },
               {
@@ -88,7 +88,13 @@ export default function SearchCommand() {
     } else if (projects && projects.length > 0) {
       setSelectedProject(projects[0].projectUuid);
     }
-  }, [defaultProjectUuid, projects, isLoadingDefault, isLoadingProjects]);
+  }, [
+    defaultProjectUuid,
+    projects,
+    isLoadingDefault,
+    isLoadingProjects,
+    setSelectedProject,
+  ]);
 
   const handleProjectChange = useCallback(
     (projectUuid: string) => {
@@ -98,6 +104,8 @@ export default function SearchCommand() {
     },
     [setDefaultProject],
   );
+
+  const [searchText, setSearchText] = useState("");
 
   const { data, isLoading: isLoadingSearch } = useLightdashSearch(
     selectedProject || undefined,
@@ -109,14 +117,44 @@ export default function SearchCommand() {
   } = useFavorites();
   const { recentUuids, trackOpen, isLoading: isLoadingRecent } = useRecent();
 
-  const dashboards = data?.dashboards ?? [];
-  const charts = data?.charts ?? [];
-  const explores = data?.explores ?? [];
-  const allResults = [...dashboards, ...charts, ...explores];
+  const filterBySearchText = useCallback(
+    (results: readonly SearchResult[]) => {
+      if (!searchText) return results;
+      const lower = searchText.toLowerCase();
+      return results.filter(
+        (r) =>
+          r.name.toLowerCase().includes(lower) ||
+          r.description?.toLowerCase().includes(lower) ||
+          r.spaceName?.toLowerCase().includes(lower),
+      );
+    },
+    [searchText],
+  );
+
+  const allDashboards = useMemo(
+    () => filterBySearchText(data?.dashboards ?? []),
+    [data?.dashboards, filterBySearchText],
+  );
+  const allCharts = useMemo(
+    () => filterBySearchText(data?.charts ?? []),
+    [data?.charts, filterBySearchText],
+  );
+  const allExplores = useMemo(
+    () => filterBySearchText(data?.explores ?? []),
+    [data?.explores, filterBySearchText],
+  );
+  const allResults = [...allDashboards, ...allCharts, ...allExplores];
   const favorites = allResults.filter((r) => isFavorite(r.uuid));
   const recentItems = recentUuids
     .map((uuid) => allResults.find((r) => r.uuid === uuid))
     .filter((r): r is SearchResult => r !== undefined);
+  const pinnedUuids = new Set([
+    ...favorites.map((r) => r.uuid),
+    ...recentItems.map((r) => r.uuid),
+  ]);
+  const dashboards = allDashboards.filter((r) => !pinnedUuids.has(r.uuid));
+  const charts = allCharts.filter((r) => !pinnedUuids.has(r.uuid));
+  const explores = allExplores.filter((r) => !pinnedUuids.has(r.uuid));
   const isLoading =
     isLoadingProjects ||
     isLoadingDefault ||
@@ -127,6 +165,8 @@ export default function SearchCommand() {
   return (
     <List
       isLoading={isLoading}
+      filtering={false}
+      onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search dashboards and charts..."
       searchBarAccessory={
         <List.Dropdown
@@ -146,6 +186,7 @@ export default function SearchCommand() {
     >
       {recentItems.length > 0 && (
         <List.Section
+          key="recent"
           title="Recently Opened"
           subtitle={`${recentItems.length}`}
         >
@@ -161,7 +202,11 @@ export default function SearchCommand() {
         </List.Section>
       )}
       {favorites.length > 0 && (
-        <List.Section title="Favorites" subtitle={`${favorites.length}`}>
+        <List.Section
+          key="favorites"
+          title="Favorites"
+          subtitle={`${favorites.length}`}
+        >
           {favorites.map((result) => (
             <SearchResultItem
               key={`fav-${result.uuid}`}
@@ -173,7 +218,11 @@ export default function SearchCommand() {
           ))}
         </List.Section>
       )}
-      <List.Section title="Dashboards" subtitle={`${dashboards.length}`}>
+      <List.Section
+        key="dashboards"
+        title="Dashboards"
+        subtitle={`${dashboards.length}`}
+      >
         {dashboards.map((result) => (
           <SearchResultItem
             key={result.uuid}
@@ -184,7 +233,7 @@ export default function SearchCommand() {
           />
         ))}
       </List.Section>
-      <List.Section title="Charts" subtitle={`${charts.length}`}>
+      <List.Section key="charts" title="Charts" subtitle={`${charts.length}`}>
         {charts.map((result) => (
           <SearchResultItem
             key={result.uuid}
@@ -195,7 +244,11 @@ export default function SearchCommand() {
           />
         ))}
       </List.Section>
-      <List.Section title="Explores" subtitle={`${explores.length}`}>
+      <List.Section
+        key="explores"
+        title="Explores"
+        subtitle={`${explores.length}`}
+      >
         {explores.map((result) => (
           <SearchResultItem
             key={result.uuid}

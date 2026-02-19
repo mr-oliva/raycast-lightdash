@@ -47,21 +47,10 @@ export function transformExploreToSearchResult(
 ): SearchResult {
   return {
     type: "explore",
-    uuid: explore.name,
+    uuid: `explore:${explore.name}`,
     name: explore.label,
     description: explore.description,
     spaceName: explore.groupLabel,
-    updatedAt: new Date(0).toISOString(),
-    views: 0,
     url: buildExploreUrl(baseUrl, projectUuid, explore.name),
   };
-}
-
-export function mergeAndSortResults(
-  dashboards: readonly SearchResult[],
-  charts: readonly SearchResult[],
-): readonly SearchResult[] {
-  return [...dashboards, ...charts].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
 }

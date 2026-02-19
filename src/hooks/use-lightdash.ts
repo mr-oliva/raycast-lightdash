@@ -7,16 +7,12 @@ import {
   fetchProjects,
   fetchSpaces,
 } from "../api/client";
-import type { SearchResult } from "../api/types";
+import type { Preferences, SearchResult } from "../api/types";
 import {
   transformChartToSearchResult,
   transformDashboardToSearchResult,
   transformExploreToSearchResult,
 } from "../helpers/transform";
-
-interface Preferences {
-  readonly baseUrl: string;
-}
 
 export function useProjects() {
   return useCachedPromise(fetchProjects, [], {
@@ -59,7 +55,7 @@ export function useLightdashSearch(projectUuid: string | undefined) {
 
       return { dashboards, charts, explores };
     },
-    [projectUuid ?? ""],
+    [projectUuid ?? "", baseUrl],
     {
       execute: !!projectUuid,
       keepPreviousData: true,

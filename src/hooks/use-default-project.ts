@@ -10,10 +10,16 @@ export function useDefaultProject() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    LocalStorage.getItem<string>(DEFAULT_PROJECT_KEY).then((value) => {
-      setDefaultProjectUuid(value);
-      setIsLoading(false);
-    });
+    LocalStorage.getItem<string>(DEFAULT_PROJECT_KEY)
+      .then((value) => {
+        setDefaultProjectUuid(value);
+      })
+      .catch(() => {
+        // proceed without default project
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const setDefaultProject = useCallback(async (projectUuid: string) => {

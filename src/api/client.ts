@@ -6,19 +6,12 @@ import type {
   LightdashExplore,
   LightdashProject,
   LightdashSpace,
+  Preferences,
 } from "./types";
-
-interface Preferences {
-  readonly baseUrl: string;
-  readonly apiKey: string;
-}
+import { normalizeBaseUrl } from "../helpers/url";
 
 function getPreferences(): Preferences {
   return getPreferenceValues<Preferences>();
-}
-
-function normalizeBaseUrl(baseUrl: string): string {
-  return baseUrl.replace(/\/+$/, "");
 }
 
 async function fetchApi<T>(path: string): Promise<T> {
