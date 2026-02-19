@@ -60,6 +60,27 @@ tests/
 - `vi.resetModules()` + dynamic import for per-test isolation in client tests
 - Two test layers: unit tests (helpers, client) and use case tests (scenarios)
 
+## Performance Policy
+
+Keep the extension lightweight. Follow these policies.
+
+### API Calls
+
+- Parallelize multiple API requests with `Promise.all`
+- Use `useCachedPromise` with `keepPreviousData: true` to prevent UI flicker on transitions
+- Avoid adding unnecessary API requests. When new data is needed, consider merging into existing parallel fetches
+
+### Dependencies
+
+- Be cautious about adding dependencies beyond `@raycast/api` and `@raycast/utils`
+- Keep the bundle size small. Avoid introducing large libraries
+
+### Data Processing
+
+- Perform filtering and sorting client-side without triggering additional API requests
+- Store user data (Favorites, Recent, DefaultProject) in `LocalStorage` (no network required)
+- Use `useMemo` / `useCallback` to prevent unnecessary recomputation
+
 ## Notes
 
 - `package.json` `author` field requires a valid Raycast Store username for publishing
