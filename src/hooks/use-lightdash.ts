@@ -53,7 +53,12 @@ export function useLightdashSearch(projectUuid: string | undefined) {
         transformExploreToSearchResult(e, baseUrl, uuid),
       );
 
-      return { dashboards, charts, explores };
+      const spaces = spacesRaw.map((s) => ({
+        uuid: s.uuid,
+        name: s.name,
+      }));
+
+      return { dashboards, charts, explores, spaces };
     },
     [projectUuid ?? "", baseUrl],
     {

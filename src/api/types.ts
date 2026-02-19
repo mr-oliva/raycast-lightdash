@@ -37,6 +37,27 @@ export interface LightdashExplore {
   readonly tags?: readonly string[];
 }
 
+export interface LightdashMetricQuery {
+  readonly exploreName: string;
+  readonly dimensions: readonly string[];
+  readonly metrics: readonly string[];
+}
+
+export interface LightdashChartConfig {
+  readonly type: string;
+}
+
+export interface LightdashSavedChart {
+  readonly uuid: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly tableName: string;
+  readonly metricQuery: LightdashMetricQuery;
+  readonly chartConfig: LightdashChartConfig;
+  readonly spaceName: string;
+  readonly updatedAt: string;
+}
+
 export interface LightdashApiResponse<T> {
   readonly status: string;
   readonly results: T;

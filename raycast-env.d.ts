@@ -20,10 +20,14 @@ declare type Preferences = ExtensionPreferences
 declare namespace Preferences {
   /** Preferences accessible in the `search` command */
   export type Search = ExtensionPreferences & {}
+  /** Preferences accessible in the `open-dashboard-set` command */
+  export type OpenDashboardSet = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
   /** Arguments passed to the `search` command */
   export type Search = {}
+  /** Arguments passed to the `open-dashboard-set` command */
+  export type OpenDashboardSet = {}
 }
 

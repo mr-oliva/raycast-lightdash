@@ -13,6 +13,12 @@
       "title": "Search Lightdash",
       "description": "Search dashboards and charts in Lightdash",
       "mode": "view"
+    },
+    {
+      "name": "open-dashboard-set",
+      "title": "Open Dashboard Set",
+      "description": "Open a set of Lightdash dashboards at once",
+      "mode": "view"
     }
   ],
   "preferences": [
