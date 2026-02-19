@@ -58,11 +58,6 @@ function SearchResultItem({
             onOpen={() => onOpen(result.uuid)}
           />
           <Action.CopyToClipboard title="Copy URL" content={result.url} />
-          <Action.CopyToClipboard
-            title="Copy as Markdown Link"
-            content={`[${result.name}](${result.url})`}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
-          />
           <Action
             title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
             icon={isFavorite ? Icon.StarDisabled : Icon.Star}
