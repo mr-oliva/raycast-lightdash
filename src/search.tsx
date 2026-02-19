@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SearchResult } from "./api/types";
 import { useDefaultProject } from "./hooks/use-default-project";
 import { useFavorites } from "./hooks/use-favorites";
@@ -78,28 +78,26 @@ export default function SearchCommand() {
     isLoading: isLoadingDefault,
   } = useDefaultProject();
   const [selectedProject, setSelectedProject] = useState<string>("");
-  const [initialized, setInitialized] = useState(false);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (initialized || isLoadingDefault || isLoadingProjects) return;
+    if (initializedRef.current || isLoadingDefault || isLoadingProjects) return;
+    initializedRef.current = true;
     if (defaultProjectUuid) {
       setSelectedProject(defaultProjectUuid);
     } else if (projects && projects.length > 0) {
       setSelectedProject(projects[0].projectUuid);
     }
-    setInitialized(true);
-  }, [
-    defaultProjectUuid,
-    projects,
-    isLoadingDefault,
-    isLoadingProjects,
-    initialized,
-  ]);
+  }, [defaultProjectUuid, projects, isLoadingDefault, isLoadingProjects]);
 
-  const handleProjectChange = (projectUuid: string) => {
-    setSelectedProject(projectUuid);
-    setDefaultProject(projectUuid);
-  };
+  const handleProjectChange = useCallback(
+    (projectUuid: string) => {
+      if (!initializedRef.current) return;
+      setSelectedProject(projectUuid);
+      setDefaultProject(projectUuid);
+    },
+    [setDefaultProject],
+  );
 
   const { data, isLoading: isLoadingSearch } = useLightdashSearch(
     selectedProject || undefined,

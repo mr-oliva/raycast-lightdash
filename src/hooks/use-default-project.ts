@@ -1,30 +1,28 @@
 import { LocalStorage } from "@raycast/api";
-import { useCachedPromise } from "@raycast/utils";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const DEFAULT_PROJECT_KEY = "defaultProjectUuid";
 
-async function getDefaultProjectUuid(): Promise<string | undefined> {
-  return LocalStorage.getItem<string>(DEFAULT_PROJECT_KEY);
-}
-
 export function useDefaultProject() {
-  const { data, revalidate, isLoading } = useCachedPromise(
-    getDefaultProjectUuid,
-    [],
-    { keepPreviousData: true },
-  );
+  const [defaultProjectUuid, setDefaultProjectUuid] = useState<
+    string | undefined
+  >(undefined);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const setDefaultProject = useCallback(
-    async (projectUuid: string) => {
-      await LocalStorage.setItem(DEFAULT_PROJECT_KEY, projectUuid);
-      revalidate();
-    },
-    [revalidate],
-  );
+  useEffect(() => {
+    LocalStorage.getItem<string>(DEFAULT_PROJECT_KEY).then((value) => {
+      setDefaultProjectUuid(value);
+      setIsLoading(false);
+    });
+  }, []);
+
+  const setDefaultProject = useCallback(async (projectUuid: string) => {
+    await LocalStorage.setItem(DEFAULT_PROJECT_KEY, projectUuid);
+    setDefaultProjectUuid(projectUuid);
+  }, []);
 
   return {
-    defaultProjectUuid: data,
+    defaultProjectUuid,
     setDefaultProject,
     isLoading,
   };

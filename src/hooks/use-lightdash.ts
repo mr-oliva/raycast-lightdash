@@ -37,9 +37,7 @@ export function useLightdashSearch(projectUuid: string | undefined) {
           fetchExplores(uuid),
         ]);
 
-      const spaceNameMap = new Map(
-        spacesRaw.map((s) => [s.uuid, s.name]),
-      );
+      const spaceNameMap = new Map(spacesRaw.map((s) => [s.uuid, s.name]));
 
       const dashboards: readonly SearchResult[] = dashboardsRaw.map((d) =>
         transformDashboardToSearchResult(
