@@ -29,13 +29,21 @@ export interface LightdashSpace {
   readonly name: string;
 }
 
+export interface LightdashExplore {
+  readonly name: string;
+  readonly label: string;
+  readonly description?: string;
+  readonly groupLabel?: string;
+  readonly tags?: readonly string[];
+}
+
 export interface LightdashApiResponse<T> {
   readonly status: string;
   readonly results: T;
 }
 
 export interface SearchResult {
-  readonly type: "dashboard" | "chart";
+  readonly type: "dashboard" | "chart" | "explore";
   readonly uuid: string;
   readonly name: string;
   readonly description?: string;

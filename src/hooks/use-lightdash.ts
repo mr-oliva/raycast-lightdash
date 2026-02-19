@@ -3,6 +3,7 @@ import { useCachedPromise } from "@raycast/utils";
 import {
   fetchCharts,
   fetchDashboards,
+  fetchExplores,
   fetchProjects,
   fetchSpaces,
 } from "../api/client";
@@ -10,6 +11,7 @@ import type { SearchResult } from "../api/types";
 import {
   transformChartToSearchResult,
   transformDashboardToSearchResult,
+  transformExploreToSearchResult,
 } from "../helpers/transform";
 
 interface Preferences {
@@ -27,11 +29,13 @@ export function useLightdashSearch(projectUuid: string | undefined) {
 
   return useCachedPromise(
     async (uuid: string) => {
-      const [dashboardsRaw, chartsRaw, spacesRaw] = await Promise.all([
-        fetchDashboards(uuid),
-        fetchCharts(uuid),
-        fetchSpaces(uuid),
-      ]);
+      const [dashboardsRaw, chartsRaw, spacesRaw, exploresRaw] =
+        await Promise.all([
+          fetchDashboards(uuid),
+          fetchCharts(uuid),
+          fetchSpaces(uuid),
+          fetchExplores(uuid),
+        ]);
 
       const spaceNameMap = new Map(
         spacesRaw.map((s) => [s.uuid, s.name]),
@@ -51,8 +55,11 @@ export function useLightdashSearch(projectUuid: string | undefined) {
           uuid,
         ),
       );
+      const explores: readonly SearchResult[] = exploresRaw.map((e) =>
+        transformExploreToSearchResult(e, baseUrl, uuid),
+      );
 
-      return { dashboards, charts };
+      return { dashboards, charts, explores };
     },
     [projectUuid ?? ""],
     {

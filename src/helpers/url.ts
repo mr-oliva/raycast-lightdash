@@ -19,3 +19,12 @@ export function buildChartUrl(
   const normalized = normalizeBaseUrl(baseUrl);
   return `${normalized}/projects/${projectUuid}/saved/${chartUuid}`;
 }
+
+export function buildExploreUrl(
+  baseUrl: string,
+  projectUuid: string,
+  exploreName: string,
+): string {
+  const normalized = normalizeBaseUrl(baseUrl);
+  return `${normalized}/projects/${projectUuid}/tables/${exploreName}`;
+}

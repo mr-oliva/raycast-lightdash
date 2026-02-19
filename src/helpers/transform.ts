@@ -1,9 +1,10 @@
 import type {
   LightdashChart,
   LightdashDashboard,
+  LightdashExplore,
   SearchResult,
 } from "../api/types";
-import { buildChartUrl, buildDashboardUrl } from "./url";
+import { buildChartUrl, buildDashboardUrl, buildExploreUrl } from "./url";
 
 export function transformDashboardToSearchResult(
   dashboard: LightdashDashboard,
@@ -36,6 +37,23 @@ export function transformChartToSearchResult(
     updatedAt: chart.updatedAt,
     views: chart.views,
     url: buildChartUrl(baseUrl, projectUuid, chart.uuid),
+  };
+}
+
+export function transformExploreToSearchResult(
+  explore: LightdashExplore,
+  baseUrl: string,
+  projectUuid: string,
+): SearchResult {
+  return {
+    type: "explore",
+    uuid: explore.name,
+    name: explore.label,
+    description: explore.description,
+    spaceName: explore.groupLabel,
+    updatedAt: new Date(0).toISOString(),
+    views: 0,
+    url: buildExploreUrl(baseUrl, projectUuid, explore.name),
   };
 }
 
