@@ -11,9 +11,7 @@ type ExtensionPreferences = {
   /** Lightdash URL - Your Lightdash instance URL (e.g. https://app.lightdash.cloud) */
   "baseUrl": string,
   /** API Key - Your Lightdash Personal Access Token */
-  "apiKey": string,
-  /** Default Project UUID - UUID of the default project to search in */
-  "defaultProjectUuid"?: string
+  "apiKey": string
 }
 
 /** Preferences accessible in all the extension's commands */
