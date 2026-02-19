@@ -11,7 +11,6 @@ describe("API Client", () => {
     vi.mocked(getPreferenceValues).mockReturnValue({
       baseUrl: "https://app.lightdash.cloud",
       apiKey: "ldt_test_token_123",
-      defaultProjectUuid: "project-uuid-123",
     });
   });
 

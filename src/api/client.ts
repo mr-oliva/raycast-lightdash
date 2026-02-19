@@ -9,7 +9,6 @@ import type {
 interface Preferences {
   readonly baseUrl: string;
   readonly apiKey: string;
-  readonly defaultProjectUuid?: string;
 }
 
 function getPreferences(): Preferences {

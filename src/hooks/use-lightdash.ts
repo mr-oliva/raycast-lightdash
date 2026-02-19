@@ -9,7 +9,6 @@ import {
 
 interface Preferences {
   readonly baseUrl: string;
-  readonly defaultProjectUuid?: string;
 }
 
 export function useProjects() {

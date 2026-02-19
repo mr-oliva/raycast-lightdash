@@ -2,18 +2,16 @@ import {
   Action,
   ActionPanel,
   Color,
-  getPreferenceValues,
   Icon,
   List,
+  Toast,
+  showToast,
 } from "@raycast/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { SearchResult } from "./api/types";
+import { useDefaultProject } from "./hooks/use-default-project";
 import { useFavorites } from "./hooks/use-favorites";
 import { useLightdashSearch, useProjects } from "./hooks/use-lightdash";
-
-interface Preferences {
-  readonly defaultProjectUuid?: string;
-}
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -68,11 +66,25 @@ function SearchResultItem({
 }
 
 export default function SearchCommand() {
-  const { defaultProjectUuid } = getPreferenceValues<Preferences>();
-  const [selectedProject, setSelectedProject] = useState<string>(
-    defaultProjectUuid ?? "",
-  );
   const { data: projects, isLoading: isLoadingProjects } = useProjects();
+  const {
+    defaultProjectUuid,
+    setDefaultProject,
+    isLoading: isLoadingDefault,
+  } = useDefaultProject();
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (initialized || isLoadingDefault || isLoadingProjects) return;
+    if (defaultProjectUuid) {
+      setSelectedProject(defaultProjectUuid);
+    } else if (projects && projects.length > 0) {
+      setSelectedProject(projects[0].projectUuid);
+    }
+    setInitialized(true);
+  }, [defaultProjectUuid, projects, isLoadingDefault, isLoadingProjects, initialized]);
+
   const { data, isLoading: isLoadingSearch } = useLightdashSearch(
     selectedProject || undefined,
   );
@@ -86,7 +98,25 @@ export default function SearchCommand() {
   const charts = data?.charts ?? [];
   const allResults = [...dashboards, ...charts];
   const favorites = allResults.filter((r) => isFavorite(r.uuid));
-  const isLoading = isLoadingProjects || isLoadingSearch || isLoadingFavorites;
+  const isLoading =
+    isLoadingProjects ||
+    isLoadingDefault ||
+    isLoadingSearch ||
+    isLoadingFavorites;
+
+  const currentProjectName = projects?.find(
+    (p) => p.projectUuid === selectedProject,
+  )?.name;
+
+  const handleSetDefault = async () => {
+    if (!selectedProject) return;
+    await setDefaultProject(selectedProject);
+    await showToast({
+      style: Toast.Style.Success,
+      title: "Default Project Set",
+      message: currentProjectName,
+    });
+  };
 
   return (
     <List
@@ -101,7 +131,11 @@ export default function SearchCommand() {
           {projects?.map((project) => (
             <List.Dropdown.Item
               key={project.projectUuid}
-              title={project.name}
+              title={
+                project.projectUuid === defaultProjectUuid
+                  ? `${project.name} (default)`
+                  : project.name
+              }
               value={project.projectUuid}
             />
           ))}
@@ -140,6 +174,28 @@ export default function SearchCommand() {
           />
         ))}
       </List.Section>
+      {selectedProject && (
+        <List.Section title="Settings">
+          <List.Item
+            title="Set Current Project as Default"
+            icon={Icon.Pin}
+            subtitle={
+              selectedProject === defaultProjectUuid
+                ? "Already default"
+                : currentProjectName
+            }
+            actions={
+              <ActionPanel>
+                <Action
+                  title="Set as Default Project"
+                  icon={Icon.Pin}
+                  onAction={handleSetDefault}
+                />
+              </ActionPanel>
+            }
+          />
+        </List.Section>
+      )}
     </List>
   );
 }

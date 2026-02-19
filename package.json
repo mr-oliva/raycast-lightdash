@@ -30,14 +30,6 @@
       "description": "Your Lightdash Personal Access Token",
       "type": "password",
       "required": true
-    },
-    {
-      "name": "defaultProjectUuid",
-      "title": "Default Project UUID",
-      "description": "UUID of the default project to search in",
-      "type": "textfield",
-      "required": false,
-      "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     }
   ],
   "dependencies": {
