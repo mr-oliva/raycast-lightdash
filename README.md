@@ -1,6 +1,6 @@
 # Lightdash for Raycast
 
-Search Lightdash dashboards and charts directly from Raycast.
+A [Raycast](https://raycast.com/) extension to search [Lightdash](https://www.lightdash.com/) dashboards and charts.
 
 ## Features
 
